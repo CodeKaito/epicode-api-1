@@ -1,20 +1,47 @@
 import express from 'express';
-import { config } from 'dotenv';
 import mongoose from 'mongoose';
+import { config } from 'dotenv';
+import cors from 'cors';
 
-// Inizializza la gestione del file env
+import { Routes } from './routes/Routes.js';
+
 config();
 
-// Crea la porta
+const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Crea il server
-const app = express();
-
-// Abilita la comunicazione con dati JSON
 app.use(express.json());
+app.use(cors());
 
-// Avvio del server
-app.listen(PORT, () => {
-    console.log(`Listening to: ${PORT}`);
+const startServer = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URL, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log(`Connected to db`);
+        app.use("/api", Routes);
+    } catch (error) {
+        console.log(`Error connecting to mongoose: ${error.message}`);
+    }
+};
+
+app.get("/", (req, res) => {
+    res.send('Hello from Epicode!');
 });
+
+app.get("/codekaito", (req, res) => {
+    res.send('Hello from Codekaito!');
+});
+
+app.get("/test", (req, res) => {
+    res.send('If you get this message, your API ENDPOINT is working!');
+});
+
+const server = app.listen(PORT, () => {
+    console.log(`listening on port ${PORT}`);
+});
+
+startServer();
+
+export default server; // Se vuoi esportare il server per altri utilizzi, come i test.
